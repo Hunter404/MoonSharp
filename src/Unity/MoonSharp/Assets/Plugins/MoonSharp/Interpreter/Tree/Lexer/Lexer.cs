@@ -166,11 +166,17 @@ namespace MoonSharp.Interpreter.Tree
 					return PotentiallyDoubleCharOperator('=', TokenType.Op_GreaterThan, TokenType.Op_GreaterThanEqual, fromLine, fromCol);
 				case '~':
 				case '!':
-					if (CursorCharNext() != '=')
-						throw new SyntaxErrorException(CreateToken(TokenType.Invalid, fromLine, fromCol), "unexpected symbol near '{0}'", c);
+					{
+						var next = CursorCharNext();
+						if (char.IsLetter(next) || next == '_')
+							return CreateSingleCharToken(TokenType.Not, fromLine, fromCol);
+						
+						if (next != '=')
+							throw new SyntaxErrorException(CreateToken(TokenType.Invalid, fromLine, fromCol), "unexpected symbol near '{0}'", c);
 
-					CursorCharNext();
-					return CreateToken(TokenType.Op_NotEqual, fromLine, fromCol, "~=");
+						CursorCharNext();
+						return CreateToken(TokenType.Op_NotEqual, fromLine, fromCol, "~=");					
+					}
 				case '.':
 					{
 						char next = CursorCharNext();
