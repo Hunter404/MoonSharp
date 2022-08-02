@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using MoonSharp.Interpreter.CoreLib.StringLib;
 
@@ -290,6 +291,30 @@ namespace MoonSharp.Interpreter.CoreLib
 				return DynValue.False;
 
 			return DynValue.NewBoolean(arg_s1.String.Contains(arg_s2.String));
+		}
+
+		
+		[MoonSharpModuleMethod]
+		public static DynValue split(ScriptExecutionContext executionContext, CallbackArguments args)
+		{
+			var arg_s1 = args.AsType(0, "split", DataType.String);
+			var arg_s2 = args.AsType(1, "split", DataType.String);
+
+			if (arg_s1.IsNil() || arg_s2.IsNil())
+				return DynValue.False;
+
+			var array = arg_s2.Type == DataType.Table
+				? arg_s2.Table.Keys.Select(x => x.ToString()).ToArray()
+				: new []{ arg_s2.ToString() };
+
+			var split = arg_s1.String
+				.Split(array, StringSplitOptions.RemoveEmptyEntries)
+				.Select(DynValue.NewString)
+				.ToArray();
+			
+			var table = new Table(executionContext.OwnerScript, split);
+
+			return DynValue.NewTable(table);
 		}
 
 	}
